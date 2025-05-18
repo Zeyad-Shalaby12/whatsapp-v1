@@ -1,12 +1,12 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
 
 # Copy package files first
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with verbose logging and legacy peer deps
+RUN npm install --verbose --legacy-peer-deps
 
 # Copy the rest of the application
 COPY . .
