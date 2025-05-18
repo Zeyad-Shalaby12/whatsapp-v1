@@ -14,9 +14,9 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Create necessary directories
-const sessionsDir = path.join(__dirname, 'sessions');
-const uploadsDir = path.join(__dirname, 'uploads');
+// تعديل مسارات الملفات لتتوافق مع Vercel
+const sessionsDir = path.join('/tmp', 'sessions');
+const uploadsDir = path.join('/tmp', 'uploads');
 
 [path.join(__dirname, 'public'), sessionsDir, uploadsDir].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -154,6 +154,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// تعديل طريقة تشغيل السيرفر
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
