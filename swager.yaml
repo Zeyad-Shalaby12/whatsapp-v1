@@ -1,0 +1,252 @@
+openapi: 3.0.0
+info:
+  title: WhatsApp API
+  description: API for managing WhatsApp sessions and sending messages
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://your-production-url.com
+    description: Production server
+
+tags:
+  - name: Sessions
+    description: Operations related to WhatsApp sessions management
+
+paths:
+  /api/sessions:
+    get:
+      tags: [Sessions]
+      summary: Get all active sessions
+      responses:
+        '200':
+          description: List of active sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "session-123456789"
+                    status:
+                      type: string
+                      example: "connected"
+                      enum: [connecting, qr, connected, disconnected]
+    post:
+      tags: [Sessions]
+      summary: Create a new WhatsApp session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Optional custom session ID
+                  example: "my-custom-session"
+      responses:
+        '200':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "session-123456789"
+                  status:
+                    type: string
+                    example: "connecting"
+        '400':
+          description: Session already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Session already exists"
+
+  /api/sessions/{id}/status:
+    get:
+      tags: [Sessions]
+      summary: Get status of a specific session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "connected"
+                    enum: [connecting, qr, connected, disconnected]
+                  qr:
+                    type: string
+                    description: URL to QR code image if status is 'qr'
+                    example: "/qrcode-session-123456789.png"
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Session not found"
+
+  /api/sessions/{id}/send-message:
+    post:
+      tags: [Sessions]
+      summary: Send a text message via WhatsApp
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [number, message]
+              properties:
+                number:
+                  type: string
+                  description: Phone number in any format (will be sanitized)
+                  example: "+1 (234) 567-8900"
+                message:
+                  type: string
+                  description: Text message to send
+                  example: "Hello from WhatsApp API!"
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Session not connected or invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Session not connected"
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Session not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to send message"
+
+  /api/sessions/{id}/send-image:
+    post:
+      tags: [Sessions]
+      summary: Send an image message via WhatsApp
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image, number]
+              properties:
+                number:
+                  type: string
+                  description: Phone number in any format (will be sanitized)
+                  example: "+1 (234) 567-8900"
+                caption:
+                  type: string
+                  description: Optional caption for the image
+                  example: "Check out this image!"
+                image:
+                  type: string
+                  format: binary
+                  description: Image file to upload (max 5MB)
+      responses:
+        '200':
+          description: Image sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Session not connected or invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Session not connected"
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Session not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to send image"

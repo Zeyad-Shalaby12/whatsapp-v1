@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# build artifacts
+dist/
+build/
+
+# logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+thumbs.db 
