@@ -1,12 +1,14 @@
-FROM node:18
+FROM node:18-slim
 
 WORKDIR /app
 
 # Copy package files first
 COPY package*.json ./
 
-# Install dependencies with verbose logging and legacy peer deps
-RUN npm install --verbose --legacy-peer-deps
+# Clean npm cache and install dependencies
+RUN npm cache clean --force && \
+    npm install --verbose --legacy-peer-deps || \
+    (echo "npm install failed" && exit 1)
 
 # Copy the rest of the application
 COPY . .
